@@ -199,59 +199,33 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
 
 <script>
-function updateConfigFromModel(model) {
+document.getElementById("buyButton").onclick = function () {
 
-  const configItems = [];
+  const fullURL = window.location.href;
 
-  model.traverse((child) => {
-    if (child.isMesh) {
+  const parts = fullURL.split("?");
 
-      const objName = child.name || "unnamed";
-
-      let colorHex = child.userData?.config?.color;
-
-      if (!colorHex && child.material?.color) {
-        colorHex = "#" + child.material.color.getHexString();
-      }
-
-      if (colorHex) {
-        configItems.push(`${objName}:${colorHex}`);
-      }
-    }
-  });
-
-  const configParam = configItems.join('|');
-
-  // 🔥 coger URL actual REAL
-  const url = new URL(window.location.href);
-  const sceneParam = url.searchParams.get("scene");
-
-  if (!sceneParam) {
-    console.warn("No hay scene en la URL");
+  if (parts.length < 2) {
+    alert("No hay parámetros en la URL");
     return;
   }
 
-  try {
-    // 1. decodificar base64
-    const decoded = atob(decodeURIComponent(sceneParam));
+  const base = parts[0];
+  let params = parts[1];
 
-    const sceneURL = new URL(decoded);
+  // ✅ cambiar dominio
+  const newBase = base.replace(
+    /https:\/\/[^/]+/,
+    "https://product.3dtwins.tech"
+  );
 
-    // 2. actualizar SOLO config
-    sceneURL.searchParams.set("config", encodeURIComponent(configParam));
+  // 🔥 AQUÍ ESTÁ LA CLAVE
+  params = params.replace(/^t=/, "scene=");
 
-    // 3. re-encode base64
-    const newScene = btoa(sceneURL.toString());
+  const finalURL = newBase + "?" + params;
 
-    // 4. actualizar URL SIN recargar
-    url.searchParams.set("scene", encodeURIComponent(newScene));
-
-    window.history.replaceState({}, "", url.toString());
-
-  } catch (e) {
-    console.error("Error actualizando config:", e);
-  }
-}
+  window.open(finalURL, "_blank");
+};
 </script>
        
 <script>
