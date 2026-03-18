@@ -197,13 +197,12 @@
 <script src="https://unpkg.com/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://unpkg.com/three@0.134.0/examples/js/exporters/GLTFExporter.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
-<script>
+
+       <script>
 document.getElementById("buyButton").onclick = function () {
 
-  // ✅ URL REAL del navegador (barra de direcciones)
   const fullURL = window.location.href;
 
-  // ✅ separar en base + parámetros
   const parts = fullURL.split("?");
 
   if (parts.length < 2) {
@@ -211,19 +210,20 @@ document.getElementById("buyButton").onclick = function () {
     return;
   }
 
-  const base = parts[0];     // antes de ?
-  const params = parts[1];   // después de ?
+  const base = parts[0];
+  let params = parts[1];
 
-  // ✅ sustituir SOLO el dominio/base
+  // ✅ cambiar dominio
   const newBase = base.replace(
     /https:\/\/[^/]+/,
     "https://product.3dtwins.tech"
   );
 
-  // ✅ reconstruir la URL EXACTA
+  // 🔥 AQUÍ ESTÁ LA CLAVE
+  params = params.replace(/^t=/, "scene=");
+
   const finalURL = newBase + "?" + params;
 
-  // 🚀 abrir
   window.open(finalURL, "_blank");
 };
 </script>
