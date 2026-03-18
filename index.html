@@ -206,13 +206,11 @@
 </script>
        
 <script>
-       
 document.getElementById("buyButton").addEventListener("click", () => {
-  let currentURL = window.location.href;
+  let currentURL = window.location.href.split("?")[0];
   let productURL = currentURL.replace("scene.3dtwins.tech", "product.3dtwins.tech");
   window.open(productURL, "_blank");
 });
-       
 </script>
 </body>
 </html>
