@@ -206,101 +206,13 @@
 </script>
        
 <script>
-function generateProductUrl3(model, fileName) {
-  const finalName = getFinalModelName(model, fileName);
-
-  const qtyInput = document.getElementById('productQuantity');
-  const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
-
-  const baseUrl = window.customBaseUrl || 'https://scene.3dtwins.tech/';
-
-  let token = null;
-  model.traverse((child) => {
-    if (child.userData?.token && !token) token = child.userData.token;
-  });
-  token = token || "no-token-found";
-
-  // Extraer configuración del modelo
-  const configItems = [];
-  model.traverse((child) => {
-    if (child.isMesh) {
-      const objName = child.name || "unnamed";
-      let colorHex = child.userData?.config?.color;
-      if (!colorHex && child.material?.color) {
-        colorHex = "#" + child.material.color.getHexString();
-      }
-      if (colorHex) configItems.push(`${objName}:${colorHex}`);
-    }
-  });
-
-  const configParam = encodeURIComponent(configItems.join('|'));
-  const modelUrlParam = encodeURIComponent(model.userData?.modelUrl || '');
-
-  const userGAInput = document.getElementById('userGA');
-  let userGAParam = '';
-  if (userGAInput && userGAInput.value.trim()) {
-    try {
-      const encodedGA = btoa(userGAInput.value.trim());
-      userGAParam = `&uGA=${encodeURIComponent(encodedGA)}`;
-    } catch (err) {
-      console.warn('Error al codificar usuario:', err);
-    }
-  }
-
-  const rawUrl =
-    `${baseUrl}?name=${encodeURIComponent(finalName)}` +
-    `&config=${configParam}` +
-    `&quantity=${qty}` +
-    `&token=${token}` +
-    `&modelUrl=${modelUrlParam}` +
-    `${userGAParam}`;
-
-  const encodedToken = btoa(rawUrl);
-  return `${baseUrl}?scene=${encodeURIComponent(encodedToken)}`;
-}
-
-// Botón fijo
-window.addEventListener("DOMContentLoaded", () => {
-  const buyButton = document.getElementById("buyButton");
-
-  buyButton.onclick = () => {
-    if (!window.currentModel || !window.currentFileName) {
-      alert("Modelo no disponible para generar la URL de compra.");
-      return;
-    }
-
-    // Guardar base original y cambiar temporalmente
-    const originalBase = window.customBaseUrl;
-    window.customBaseUrl = 'https://product.3dtwins.tech/';
-
-    // Generar URL con estado actual del modelo
-    let productURL = generateProductUrl3(window.currentModel, window.currentFileName);
-
-    // Restaurar base original
-    window.customBaseUrl = originalBase;
-
-    // Leer buyURL de la URL del navegador
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const sceneParam = params.get("t") || params.get("scene");
-      if (sceneParam) {
-        const decodedScene = atob(decodeURIComponent(sceneParam));
-        const sceneURL = new URL(decodedScene);
-        const buyParam = sceneURL.searchParams.get("buyURL");
-        if (buyParam) {
-          const urlObj = new URL(productURL);
-          urlObj.search += `&buyURL=${encodeURIComponent(buyParam)}`;
-          productURL = urlObj.toString();
-        }
-      }
-    } catch (err) {
-      console.warn("No se pudo añadir buyURL desde la URL del navegador:", err);
-    }
-
-    // Abrir URL final en nueva pestaña
-    window.open(productURL, "_blank");
-  };
+       
+document.getElementById("buyButton").addEventListener("click", () => {
+  let currentURL = window.location.href;
+  let productURL = currentURL.replace("scene.3dtwins.tech", "product.3dtwins.tech");
+  window.open(productURL, "_blank");
 });
+       
 </script>
 </body>
 </html>
