@@ -199,26 +199,23 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
 
 <script>
-document.getElementById("buyButton").addEventListener("click", () => {
+document.getElementById("buyButton").onclick = function () {
 
-  const currentURL = window.location.href;
+  // 🔥 coger EXACTAMENTE la URL actual
+  const current = window.location.href;
 
-  if (!currentURL.includes("?scene=")) {
-    alert("No hay parámetro scene en la URL.");
-    return;
-  }
+  console.log("URL ACTUAL:", current);
 
-  try {
-    const url = new URL(currentURL);
+  // 🔥 reemplazo bruto, sin parsear nada
+  const newURL = current.replace(
+    "scene.3dtwins.tech",
+    "product.3dtwins.tech"
+  );
 
-    url.hostname = "product.3dtwins.tech";
-    window.open(url.toString(), "_blank");
+  console.log("URL FINAL:", newURL);
 
-  } catch (err) {
-    console.error(err);
-    alert("Error en la URL");
-  }
-});
+  window.open(newURL, "_blank");
+};
 </script>
        
 <script>
