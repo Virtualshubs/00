@@ -200,18 +200,18 @@
 
 <script>
 document.getElementById("buyButton").addEventListener("click", () => {
-  const sceneInput = document.getElementById("modelUrlInput");
 
-  if (!sceneInput || !sceneInput.value) {
-    alert("No hay escena disponible.");
+  const currentURL = window.location.href;
+
+  if (!currentURL.includes("scene=")) {
+    alert("No hay parámetro scene en la URL.");
     return;
   }
 
   try {
-    const url = new URL(sceneInput.value);
+    const url = new URL(currentURL);
 
     url.hostname = "product.3dtwins.tech";
-
     window.open(url.toString(), "_blank");
 
   } catch (err) {
