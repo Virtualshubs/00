@@ -207,59 +207,39 @@
 <script>
 window.addEventListener("DOMContentLoaded", () => {
   const buyButton = document.getElementById("buyButton");
-  const input = document.getElementById("modelUrlInput");
-  const btn = document.getElementById("loadModelFromUrlBtn");
-  const startScreen = document.getElementById("startScreen");
-  const appContainer = document.getElementById("appContainer");
 
-  if (!input || !btn || !startScreen || !appContainer || !buyButton) return;
+  buyButton.onclick = () => {
+    if (!window.currentModel || !window.currentFileName) {
+      alert("Modelo no disponible para generar la URL de compra.");
+      return;
+    }
 
-  let fullUrl = window.location.href;
-
-  // 🔹 Revisar si existe parámetro t= para decodificar
-  const params = new URLSearchParams(fullUrl.split("?")[1]);
-  if (params.has("t")) {
+    // 🔹 Leer URL de origen desde input o parámetro t
+    let sceneBuyURL = '';
     try {
-      fullUrl = atob(params.get("t")); 
+      const input = document.getElementById("modelUrlInput");
+      let fullUrl = input?.value || window.location.href;
+
+      // Revisar si hay parámetro t=
+      const params = new URLSearchParams(fullUrl.split("?")[1]);
+      if (params.has("t")) {
+        fullUrl = atob(params.get("t"));
+      }
+
+      const sceneURL = new URL(fullUrl);
+      const buyParam = sceneURL.searchParams.get("buyURL");
+      if (buyParam) sceneBuyURL = decodeURIComponent(buyParam);
     } catch (err) {
-      console.error("Error decodificando t=", err);
+      console.warn("No se pudo leer buyURL desde escena:", err);
     }
-  }
 
-  // 🔹 Detectar buyURL en la escena
-  let sceneBuyURL = '';
-  try {
-    const decodedScene = fullUrl;
-    const sceneURL = new URL(decodedScene);
-    const buyParam = sceneURL.searchParams.get("buyURL");
-    if (buyParam) sceneBuyURL = decodeURIComponent(buyParam);
-  } catch(e) {
-    console.warn("No se pudo leer buyURL desde scene:", e);
-  }
+    // 🔹 Generar URL de compra usando generateProductUrl3
+    const url = generateProductUrl3(window.currentModel, window.currentFileName, sceneBuyURL);
+    window.open(url, "_blank");
+  };
 
-  // 🔹 Mostrar botón solo si hay buyURL
-  if (sceneBuyURL && sceneBuyURL.startsWith("https://")) {
-    buyButton.style.display = "inline-block";
-  }
-
-  // 🔹 Inicialización del visor
-  input.value = fullUrl;
-  startScreen.style.display = "none";
-  appContainer.style.display = "block";
-
-  const sceneParams = new URLSearchParams(fullUrl.split("?")[1]);
-  const isScene = sceneParams.has("scene") || sceneParams.has("hud") || sceneParams.has("bgColor");
-
-  setTimeout(() => {
-    if (isScene) {
-      modelUrlInput(fullUrl);
-    } else {
-      btn.click();
-    }
-  }, 500);
-
-  // 🔹 Función de generar URL al producto
-  function generateProductUrl3(model, fileName, buyURL = '') {
+  // 🔹 Función generateProductUrl3
+  window.generateProductUrl3 = function(model, fileName, buyURL = '') {
     const finalName = getFinalModelName(model, fileName);
     const qtyInput = document.getElementById('productQuantity');
     const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
@@ -307,16 +287,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
     const encodedToken = btoa(rawUrl);
     return `${baseUrl}?scene=${encodeURIComponent(encodedToken)}`;
-  }
-
-  // 🔹 Acción del botón Comprar
-  buyButton.onclick = () => {
-    if (!window.currentModel || !window.currentFileName) {
-      alert("Modelo no disponible para generar la URL de compra.");
-      return;
-    }
-    const url = generateProductUrl3(window.currentModel, window.currentFileName, sceneBuyURL);
-    window.open(url, "_blank");
   };
 });
 </script>
