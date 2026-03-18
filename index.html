@@ -205,7 +205,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const startScreen = document.getElementById("startScreen");
   const appContainer = document.getElementById("appContainer");
 
-  if (!input || !btn || !startScreen || !appContainer) return;
+  if (!input || !btn || !startScreen || !appContainer || !buyButton) return;
 
   let fullUrl = window.location.href;
 
@@ -213,8 +213,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(fullUrl.split("?")[1]);
   if (params.has("t")) {
     try {
-      const decoded = atob(params.get("t")); 
-      fullUrl = decoded;
+      fullUrl = atob(params.get("t")); 
     } catch (err) {
       console.error("Error decodificando t=", err);
     }
@@ -253,7 +252,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }, 500);
 
   // 🔹 Función de generar URL al producto
-  function generateProductUrl(model, fileName, buyURL = '') {
+  function generateProductUrl3(model, fileName, buyURL = '') {
     const finalName = getFinalModelName(model, fileName);
     const qtyInput = document.getElementById('productQuantity');
     const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
@@ -309,7 +308,7 @@ window.addEventListener("DOMContentLoaded", () => {
       alert("Modelo no disponible para generar la URL de compra.");
       return;
     }
-    const url = generateProductUrl(window.currentModel, window.currentFileName, sceneBuyURL);
+    const url = generateProductUrl3(window.currentModel, window.currentFileName, sceneBuyURL);
     window.open(url, "_blank");
   };
 });
