@@ -278,10 +278,8 @@ window.addEventListener("DOMContentLoaded", () => {
     const rawUrl =
       `${baseUrl}?name=${encodeURIComponent(finalName)}` +
       `&config=${configParam}` +
-      `&quantity=${qty}` +
       `&token=${token}` +
-      `&modelUrl=${modelUrlParam}` +
-      `${userGAParam}`;
+      `&modelUrl=${modelUrlParam}`;
 
     const encodedToken = btoa(rawUrl);
     return `${baseUrl}?scene=${encodeURIComponent(encodedToken)}`;
