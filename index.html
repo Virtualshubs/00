@@ -200,9 +200,12 @@
 
 <script>
 document.getElementById("buyButton").onclick = function () {
+  if (!currentModel) {
+    alert("No hay modelo cargado.");
+    return;
+  }
 
   const fullURL = window.location.href;
-
   const parts = fullURL.split("?");
 
   if (parts.length < 2) {
@@ -219,8 +222,35 @@ document.getElementById("buyButton").onclick = function () {
     "https://product.3dtwins.tech"
   );
 
-  // 🔥 AQUÍ ESTÁ LA CLAVE
+  // 🔥 cambiar t= → scene=
   params = params.replace(/^t=/, "scene=");
+
+  // 🔑 actualizar config en tiempo real
+  try {
+    const decoded = atob(decodeURIComponent(params.split("=")[1]));
+    const urlObj = new URL(decoded);
+
+    const configItems = [];
+    currentModel.traverse((child) => {
+      if (child.isMesh) {
+        const objName = child.name || "unnamed";
+        let colorHex = child.userData?.config?.color;
+        if (!colorHex && child.material?.color) {
+          colorHex = "#" + child.material.color.getHexString();
+        }
+        if (colorHex) configItems.push(`${objName}:${colorHex}`);
+      }
+    });
+
+    if (configItems.length) {
+      urlObj.searchParams.set("config", configItems.join("|"));
+    }
+
+    // codificar nuevamente base64
+    params = "scene=" + encodeURIComponent(btoa(urlObj.toString()));
+  } catch (err) {
+    console.warn("Error actualizando config:", err);
+  }
 
   const finalURL = newBase + "?" + params;
 
