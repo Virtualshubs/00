@@ -203,7 +203,7 @@ document.getElementById("buyButton").addEventListener("click", () => {
 
   const currentURL = window.location.href;
 
-  if (!currentURL.includes("scene=")) {
+  if (!currentURL.includes("?scene=")) {
     alert("No hay parámetro scene en la URL.");
     return;
   }
