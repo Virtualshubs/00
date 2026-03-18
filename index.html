@@ -200,30 +200,66 @@
 
 <script>
 document.getElementById("buyButton").onclick = function () {
+  if (!window.currentModel) {
+    alert("No hay modelo cargado");
+    return;
+  }
 
+  // 1️⃣ Generar configParams en tiempo real
+  const configItems = [];
+  window.currentModel.traverse((child) => {
+    if (child.isMesh) {
+      const objName = child.name || "unnamed";
+      let colorHex = child.userData?.config?.color;
+      if (!colorHex && child.material?.color) {
+        colorHex = "#" + child.material.color.getHexString();
+      }
+      if (colorHex) configItems.push(`${objName}:${colorHex}`);
+    }
+  });
+
+  const newConfig = encodeURIComponent(configItems.join("|"));
+
+  // 2️⃣ Tomar la URL actual
   const fullURL = window.location.href;
-
   const parts = fullURL.split("?");
-
   if (parts.length < 2) {
     alert("No hay parámetros en la URL");
     return;
   }
 
-  const base = parts[0];
+  let base = parts[0];
   let params = parts[1];
 
-  // ✅ cambiar dominio
-  const newBase = base.replace(
-    /https:\/\/[^/]+/,
-    "https://product.3dtwins.tech"
-  );
+  // 3️⃣ Cambiar dominio
+  const newBase = base.replace(/https:\/\/[^/]+/, "https://product.3dtwins.tech");
 
-  // 🔥 AQUÍ ESTÁ LA CLAVE
+  // 4️⃣ Reemplazar t= por scene= si es necesario
   params = params.replace(/^t=/, "scene=");
 
-  const finalURL = newBase + "?" + params;
+  // 5️⃣ Actualizar config dentro del base64
+  try {
+    // Decodificar el scene actual
+    const sceneParam = decodeURIComponent(params.replace(/^scene=/, ""));
+    const decoded = atob(sceneParam);
 
+    const sceneURL = new URL(decoded);
+
+    // Cambiar solo config
+    sceneURL.searchParams.set("config", newConfig);
+
+    // Re-encode base64
+    const newScene = btoa(sceneURL.toString());
+
+    // Actualizar params
+    params = "scene=" + encodeURIComponent(newScene);
+
+  } catch (e) {
+    console.warn("No se pudo actualizar config dentro de scene:", e);
+  }
+
+  // 6️⃣ Abrir URL final
+  const finalURL = newBase + "?" + params;
   window.open(finalURL, "_blank");
 };
 </script>
