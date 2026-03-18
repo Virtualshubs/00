@@ -95,7 +95,7 @@
         <button id="applyFloat" hidden></button>
       </div>
 
-    </div> <!-- canvasWrap -->
+    </div> 
 
     <div id="panel" hidden>
       <h3>
@@ -184,12 +184,12 @@
         <div id="sceneControls"></div>
       </div>
 
-    </div> <!-- panel -->
+    </div> 
 
     <div id="libraryContainer" style="display:flex; gap:10px" hidden></div>
 
-  </div> <!-- app -->
-</div> <!-- appContainer -->
+  </div> 
+</div> 
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-1XW6FG6SRH"></script>
 <script src="https://unpkg.com/three@0.134.0/build/three.min.js"></script>
@@ -207,25 +207,25 @@
        
 <script>
 document.getElementById("buyButton").addEventListener("click", () => {
-  // Tomamos la URL original de la escena (la que carga el modelo)
+ 
   const sceneInput = document.getElementById("modelUrlInput");
   if (!sceneInput || !sceneInput.value) {
     alert("No hay escena cargada para generar el link de compra.");
     return;
   }
 
-  // 1️⃣ Dividimos en base y parámetros
   const fullUrl = sceneInput.value;
-  const [base, params] = fullUrl.split("?");
 
-  // 2️⃣ Sustituimos solo el dominio/base
-  const newBase = base.replace(/^(https?:\/\/)?(.*?)(\/|$)/, "https://product.3dtwins.tech/");
+  try {
+    const urlObj = new URL(fullUrl);
+    urlObj.protocol = "https:";
+    urlObj.hostname = "product.3dtwins.tech";
 
-  // 3️⃣ Reconstruimos la URL completa con parámetros intactos
-  const productURL = params ? `${newBase}?${params}` : newBase;
-
-  // 4️⃣ Abrimos en nueva pestaña
-  window.open(productURL, "_blank");
+    window.open(urlObj.href, "_blank");
+  } catch (err) {
+    console.error("Error generando URL de compra:", err);
+    alert("No se pudo generar la URL de compra.");
+  }
 });
 </script>
 </body>
