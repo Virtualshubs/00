@@ -197,24 +197,34 @@
 <script src="https://unpkg.com/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://unpkg.com/three@0.134.0/examples/js/exporters/GLTFExporter.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
-
 <script>
 document.getElementById("buyButton").onclick = function () {
 
-  // 🔥 coger EXACTAMENTE la URL actual
-  const current = window.location.href;
+  // ✅ URL REAL del navegador (barra de direcciones)
+  const fullURL = window.location.href;
 
-  console.log("URL ACTUAL:", current);
+  // ✅ separar en base + parámetros
+  const parts = fullURL.split("?");
 
-  // 🔥 reemplazo bruto, sin parsear nada
-  const newURL = current.replace(
-    "scene.3dtwins.tech",
-    "product.3dtwins.tech"
+  if (parts.length < 2) {
+    alert("No hay parámetros en la URL");
+    return;
+  }
+
+  const base = parts[0];     // antes de ?
+  const params = parts[1];   // después de ?
+
+  // ✅ sustituir SOLO el dominio/base
+  const newBase = base.replace(
+    /https:\/\/[^/]+/,
+    "https://product.3dtwins.tech"
   );
 
-  console.log("URL FINAL:", newURL);
+  // ✅ reconstruir la URL EXACTA
+  const finalURL = newBase + "?" + params;
 
-  window.open(newURL, "_blank");
+  // 🚀 abrir
+  window.open(finalURL, "_blank");
 };
 </script>
        
