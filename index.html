@@ -208,38 +208,40 @@
 window.addEventListener("DOMContentLoaded", () => {
   const buyButton = document.getElementById("buyButton");
 
-  buyButton.onclick = () => {
+  buyButton.onclick = async () => {
     if (!window.currentModel || !window.currentFileName) {
       alert("Modelo no disponible para generar la URL de compra.");
       return;
     }
 
-    // 🔹 Leer URL de origen desde input o parámetro t
-    let sceneBuyURL = '';
+    // 🔹 1️⃣ Generar URL base en tiempo real
+    let baseUrl = generateProductUrl3(window.currentModel, window.currentFileName);
+
+    // 🔹 2️⃣ Leer URL actual del navegador, decodificar base64 y extraer buyURL si existe
     try {
-      const input = document.getElementById("modelUrlInput");
-      let fullUrl = input?.value || window.location.href;
-
-      // Revisar si hay parámetro t=
-      const params = new URLSearchParams(fullUrl.split("?")[1]);
-      if (params.has("t")) {
-        fullUrl = atob(params.get("t"));
+      const urlParams = new URLSearchParams(window.location.search);
+      let sceneParam = urlParams.get("scene") || urlParams.get("t"); // Soporta ambos casos
+      if (sceneParam) {
+        let decoded = atob(decodeURIComponent(sceneParam));
+        const sceneURL = new URL(decoded);
+        const buyParam = sceneURL.searchParams.get("buyURL");
+        if (buyParam) {
+          // Añadir buyURL al URL generado en la fase 1
+          const baseParts = new URL(baseUrl);
+          baseParts.search += `&buyURL=${encodeURIComponent(buyParam)}`;
+          baseUrl = baseParts.toString();
+        }
       }
-
-      const sceneURL = new URL(fullUrl);
-      const buyParam = sceneURL.searchParams.get("buyURL");
-      if (buyParam) sceneBuyURL = decodeURIComponent(buyParam);
     } catch (err) {
-      console.warn("No se pudo leer buyURL desde escena:", err);
+      console.warn("No se pudo leer buyURL del navegador:", err);
     }
 
-    // 🔹 Generar URL de compra usando generateProductUrl3
-    const url = generateProductUrl3(window.currentModel, window.currentFileName, sceneBuyURL);
-    window.open(url, "_blank");
+    // 🔹 3️⃣ Abrir la URL final en nueva pestaña
+    window.open(baseUrl, "_blank");
   };
 
-  // 🔹 Función generateProductUrl3
-  window.generateProductUrl3 = function(model, fileName, buyURL = '') {
+  // 🔹 Función generateProductUrl3 (igual que antes)
+  window.generateProductUrl3 = function(model, fileName) {
     const finalName = getFinalModelName(model, fileName);
     const qtyInput = document.getElementById('productQuantity');
     const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
@@ -270,12 +272,8 @@ window.addEventListener("DOMContentLoaded", () => {
       try {
         const encodedGA = btoa(userGAInput.value.trim());
         userGAParam = `&uGA=${encodeURIComponent(encodedGA)}`;
-      } catch (err) {
-        console.warn('Error al codificar usuario:', err);
-      }
+      } catch {}
     }
-
-    const buyURLParam = buyURL ? `&buyURL=${encodeURIComponent(buyURL)}` : '';
 
     const rawUrl =
       `${baseUrl}?name=${encodeURIComponent(finalName)}` +
@@ -283,7 +281,7 @@ window.addEventListener("DOMContentLoaded", () => {
       `&quantity=${qty}` +
       `&token=${token}` +
       `&modelUrl=${modelUrlParam}` +
-      `${userGAParam}${buyURLParam}`;
+      `${userGAParam}`;
 
     const encodedToken = btoa(rawUrl);
     return `${baseUrl}?scene=${encodeURIComponent(encodedToken)}`;
