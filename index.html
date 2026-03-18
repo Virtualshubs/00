@@ -214,65 +214,37 @@ window.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // 🔹 1️⃣ Generar la URL base usando la función clásica
-    let baseUrl = generateProductUrl3(window.currentModel, window.currentFileName);
+    // 🔹 Guardar base original y cambiar temporalmente para product
+    const originalBase = window.customBaseUrl;
+    window.customBaseUrl = 'https://product.3dtwins.tech/';
 
-    // 🔹 2️⃣ Leer URL actual del navegador y extraer buyURL si existe
+    // 🔹 Generar URL base con estado actual del modelo
+    let baseURL = generateProductUrl(window.currentModel, window.currentFileName);
+
+    // 🔹 Restaurar base original
+    window.customBaseUrl = originalBase;
+
+    // 🔹 Leer buyURL desde URL del navegador y añadirlo al encodedToken
     try {
-      const urlParams = new URLSearchParams(window.location.search);
-      let sceneParam = urlParams.get("scene") || urlParams.get("t"); // soporta ambos casos
+      const params = new URLSearchParams(window.location.search);
+      const sceneParam = params.get("t") || params.get("scene");
       if (sceneParam) {
-        const decoded = atob(decodeURIComponent(sceneParam));
-        const sceneURL = new URL(decoded);
+        const decodedScene = atob(decodeURIComponent(sceneParam));
+        const sceneURL = new URL(decodedScene);
         const buyParam = sceneURL.searchParams.get("buyURL");
         if (buyParam) {
-          // Añadir buyURL a la URL base codificada
-          const urlObj = new URL(baseUrl);
+          const urlObj = new URL(baseURL);
           urlObj.search += `&buyURL=${encodeURIComponent(buyParam)}`;
-          baseUrl = urlObj.toString();
+          baseURL = urlObj.toString();
         }
       }
     } catch (err) {
-      console.warn("No se pudo leer buyURL del navegador:", err);
+      console.warn("No se pudo añadir buyURL desde la URL del navegador:", err);
     }
 
-    // 🔹 3️⃣ Abrir URL final en nueva pestaña
-    window.open(baseUrl, "_blank");
+    // 🔹 Abrir URL final en nueva pestaña
+    window.open(baseURL, "_blank");
   };
-
-  // 🔹 Función clásica de generación de URL (captura configuración)
-  function generateProductUrl3(model, fileName) {
-    const finalName = getFinalModelName(model, fileName);
-
-    const qtyInput = document.getElementById('productQuantity');
-    const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
-
-    const baseUrl = window.customBaseUrl || 'https://3dtwins.es/producto-personalizado';
-
-    let token = null;
-    model.traverse((child) => {
-      if (child.userData?.token && !token) token = child.userData.token;
-    });
-    token = token || "no-token-found";
-
-    // Extraer configuración de colores/materiales
-    const configItems = [];
-    model.traverse((child) => {
-      if (child.isMesh) {
-        const objName = child.name || "unnamed";
-        let colorHex = child.userData?.config?.color;
-        if (!colorHex && child.material?.color) {
-          colorHex = "#" + child.material.color.getHexString();
-        }
-        if (colorHex) configItems.push(`${objName}:${colorHex}`);
-      }
-    });
-
-    const configParam = encodeURIComponent(configItems.join('|'));
-    const modelUrlParam = encodeURIComponent(model.userData?.modelUrl || '');
-
-    return `${baseUrl}?name=${encodeURIComponent(finalName)}&config=${configParam}&quantity=${qty}&token=${token}&modelUrl=${modelUrlParam}`;
-  }
 });
 </script>
 </body>
