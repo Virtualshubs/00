@@ -199,100 +199,63 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const buyButton = document.getElementById("buyButton");
-  if (!buyButton) return;
+document.getElementById("buyButton").onclick = function () {
+  if (!currentModel) {
+    alert("No hay modelo cargado.");
+    return;
+  }
 
-  // ✅ Mostrar/ocultar el botón según existencia de buyURL
   const fullURL = window.location.href;
-  const urlParts = fullURL.split("?");
-  if (urlParts.length < 2) {
-    buyButton.style.display = "none";
+  const parts = fullURL.split("?");
+
+  if (parts.length < 2) {
+    alert("No hay parámetros en la URL");
     return;
   }
 
-  const params = urlParts[1];
-  const sceneMatch = params.match(/(?:scene|t)=([^&]+)/);
-  if (!sceneMatch) {
-    buyButton.style.display = "none";
-    return;
-  }
+  const base = parts[0];
+  let params = parts[1];
 
+  // ✅ cambiar dominio
+  const newBase = base.replace(
+    /https:\/\/[^/]+/,
+    "https://product.3dtwins.tech"
+  );
+
+  // 🔥 cambiar t= → scene=
+  params = params.replace(/^t=/, "scene=");
+
+  // 🔑 actualizar config en tiempo real
   try {
-    const decodedScene = atob(decodeURIComponent(sceneMatch[1]));
-    const sceneURL = new URL(decodedScene);
-    const buyParam = sceneURL.searchParams.get("buyURL");
+    const decoded = atob(decodeURIComponent(params.split("=")[1]));
+    const urlObj = new URL(decoded);
 
-    if (buyParam && buyParam.startsWith("http")) {
-      buyButton.style.display = "inline-block"; // Mostrar botón
-    } else {
-      buyButton.style.display = "none"; // Ocultar si no hay buyURL
+    const configItems = [];
+    currentModel.traverse((child) => {
+      if (child.isMesh) {
+        const objName = child.name || "unnamed";
+        let colorHex = child.userData?.config?.color;
+        if (!colorHex && child.material?.color) {
+          colorHex = "#" + child.material.color.getHexString();
+        }
+        if (colorHex) configItems.push(`${objName}:${colorHex}`);
+      }
+    });
+
+    if (configItems.length) {
+      urlObj.searchParams.set("config", configItems.join("|"));
     }
 
+    // codificar nuevamente base64
+    params = "scene=" + encodeURIComponent(btoa(urlObj.toString()));
   } catch (err) {
-    console.warn("Error leyendo buyURL:", err);
-    buyButton.style.display = "none";
+    console.warn("Error actualizando config:", err);
   }
 
-  // 🔹 Lógica existente de compra
-  buyButton.onclick = function () {
-    if (!currentModel) {
-      alert("No hay modelo cargado.");
-      return;
-    }
+  const finalURL = newBase + "?" + params;
 
-    const fullURL = window.location.href;
-    const parts = fullURL.split("?");
-
-    if (parts.length < 2) {
-      alert("No hay parámetros en la URL");
-      return;
-    }
-
-    const base = parts[0];
-    let params = parts[1];
-
-    // ✅ cambiar dominio
-    const newBase = base.replace(
-      /https:\/\/[^/]+/,
-      "https://product.3dtwins.tech"
-    );
-
-    // 🔥 cambiar t= → scene=
-    params = params.replace(/^t=/, "scene=");
-
-    // 🔑 actualizar config en tiempo real
-    try {
-      const decoded = atob(decodeURIComponent(params.split("=")[1]));
-      const urlObj = new URL(decoded);
-
-      const configItems = [];
-      currentModel.traverse((child) => {
-        if (child.isMesh) {
-          const objName = child.name || "unnamed";
-          let colorHex = child.userData?.config?.color;
-          if (!colorHex && child.material?.color) {
-            colorHex = "#" + child.material.color.getHexString();
-          }
-          if (colorHex) configItems.push(`${objName}:${colorHex}`);
-        }
-      });
-
-      if (configItems.length) {
-        urlObj.searchParams.set("config", configItems.join("|"));
-      }
-
-      // codificar nuevamente base64
-      params = "scene=" + encodeURIComponent(btoa(urlObj.toString()));
-    } catch (err) {
-      console.warn("Error actualizando config:", err);
-    }
-
-    const finalURL = newBase + "?" + params;
-
-    window.open(finalURL, "_blank");
-  };
-});
+  window.open(finalURL, "_blank");
+};
 </script>
        
 <script>
