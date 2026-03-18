@@ -32,7 +32,7 @@
 
       <div class="topbar">
         <div class="chip" id="modelName" hidden>No model</div>
-              <button id="buyButton" style="position:absolute; top:20px; left:10px; z-index:99999">Comprar</button>
+              <button id="buyButton" style="position:absolute; top:20px; right:10px; z-index:99999">Comprar</button>
 
         <div id="shoppingModal" style="display:none; position:fixed; margin:0; top:28px; left:0; width:100%; height:100vh; background:rgba(0,0,0,.85); justify-content:center; align-items:center; z-index:9999">
           <div style="position:relative; width:100%; max-width:1000px; height:95%; background:#fff; border-radius:0; overflow:hidden; display:flex; flex-direction:row; box-shadow:0 10px 25px rgba(0,0,0,.4)">
@@ -207,24 +207,23 @@
        
 <script>
 document.getElementById("buyButton").addEventListener("click", () => {
- 
   const sceneInput = document.getElementById("modelUrlInput");
+
   if (!sceneInput || !sceneInput.value) {
-    alert("No hay escena cargada para generar el link de compra.");
+    alert("No hay escena disponible.");
     return;
   }
 
-  const fullUrl = sceneInput.value;
-
   try {
-    const urlObj = new URL(fullUrl);
-    urlObj.protocol = "https:";
-    urlObj.hostname = "product.3dtwins.tech";
+    const url = new URL(sceneInput.value);
 
-    window.open(urlObj.href, "_blank");
+    url.hostname = "product.3dtwins.tech";
+
+    window.open(url.toString(), "_blank");
+
   } catch (err) {
-    console.error("Error generando URL de compra:", err);
-    alert("No se pudo generar la URL de compra.");
+    console.error(err);
+    alert("Error en la URL");
   }
 });
 </script>
