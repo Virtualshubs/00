@@ -208,44 +208,46 @@
 window.addEventListener("DOMContentLoaded", () => {
   const buyButton = document.getElementById("buyButton");
 
-  buyButton.onclick = async () => {
+  buyButton.onclick = () => {
     if (!window.currentModel || !window.currentFileName) {
       alert("Modelo no disponible para generar la URL de compra.");
       return;
     }
 
-    // 🔹 1️⃣ Generar URL base en tiempo real
+    // 🔹 1️⃣ Generar la URL base usando la función clásica
     let baseUrl = generateProductUrl3(window.currentModel, window.currentFileName);
 
-    // 🔹 2️⃣ Leer URL actual del navegador, decodificar base64 y extraer buyURL si existe
+    // 🔹 2️⃣ Leer URL actual del navegador y extraer buyURL si existe
     try {
       const urlParams = new URLSearchParams(window.location.search);
-      let sceneParam = urlParams.get("scene") || urlParams.get("t"); // Soporta ambos casos
+      let sceneParam = urlParams.get("scene") || urlParams.get("t"); // soporta ambos casos
       if (sceneParam) {
-        let decoded = atob(decodeURIComponent(sceneParam));
+        const decoded = atob(decodeURIComponent(sceneParam));
         const sceneURL = new URL(decoded);
         const buyParam = sceneURL.searchParams.get("buyURL");
         if (buyParam) {
-          // Añadir buyURL al URL generado en la fase 1
-          const baseParts = new URL(baseUrl);
-          baseParts.search += `&buyURL=${encodeURIComponent(buyParam)}`;
-          baseUrl = baseParts.toString();
+          // Añadir buyURL a la URL base codificada
+          const urlObj = new URL(baseUrl);
+          urlObj.search += `&buyURL=${encodeURIComponent(buyParam)}`;
+          baseUrl = urlObj.toString();
         }
       }
     } catch (err) {
       console.warn("No se pudo leer buyURL del navegador:", err);
     }
 
-    // 🔹 3️⃣ Abrir la URL final en nueva pestaña
+    // 🔹 3️⃣ Abrir URL final en nueva pestaña
     window.open(baseUrl, "_blank");
   };
 
-  // 🔹 Función generateProductUrl3 (igual que antes)
-  window.generateProductUrl3 = function(model, fileName) {
+  // 🔹 Función clásica de generación de URL (captura configuración)
+  function generateProductUrl3(model, fileName) {
     const finalName = getFinalModelName(model, fileName);
+
     const qtyInput = document.getElementById('productQuantity');
     const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
-    const baseUrl = 'https://product.3dtwins.tech/';
+
+    const baseUrl = window.customBaseUrl || 'https://3dtwins.es/producto-personalizado';
 
     let token = null;
     model.traverse((child) => {
@@ -253,12 +255,15 @@ window.addEventListener("DOMContentLoaded", () => {
     });
     token = token || "no-token-found";
 
+    // Extraer configuración de colores/materiales
     const configItems = [];
     model.traverse((child) => {
       if (child.isMesh) {
         const objName = child.name || "unnamed";
         let colorHex = child.userData?.config?.color;
-        if (!colorHex && child.material?.color) colorHex = "#" + child.material.color.getHexString();
+        if (!colorHex && child.material?.color) {
+          colorHex = "#" + child.material.color.getHexString();
+        }
         if (colorHex) configItems.push(`${objName}:${colorHex}`);
       }
     });
@@ -266,26 +271,9 @@ window.addEventListener("DOMContentLoaded", () => {
     const configParam = encodeURIComponent(configItems.join('|'));
     const modelUrlParam = encodeURIComponent(model.userData?.modelUrl || '');
 
-    const userGAInput = document.getElementById('userGA');
-    let userGAParam = '';
-    if (userGAInput && userGAInput.value.trim()) {
-      try {
-        const encodedGA = btoa(userGAInput.value.trim());
-        userGAParam = `&uGA=${encodeURIComponent(encodedGA)}`;
-      } catch {}
-    }
-
-    const rawUrl =
-      `${baseUrl}?name=${encodeURIComponent(finalName)}` +
-      `&config=${configParam}` +
-      `&token=${token}` +
-      `&modelUrl=${modelUrlParam}`;
-
-    const encodedToken = btoa(rawUrl);
-    return `${baseUrl}?scene=${encodeURIComponent(encodedToken)}`;
-  };
+    return `${baseUrl}?name=${encodeURIComponent(finalName)}&config=${configParam}&quantity=${qty}&token=${token}&modelUrl=${modelUrlParam}`;
+  }
 });
 </script>
-       
 </body>
 </html>
