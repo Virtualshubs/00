@@ -204,27 +204,28 @@ document.getElementById("buyButton").onclick = function () {
   }
 
   const fullURL = window.location.href;
-  const parts = fullURL.split("?");
+  const urlParams = new URLSearchParams(window.location.search);
+  const sceneParam = urlParams.get("scene");
+  let sceneBuyURL = '';
 
-  if (parts.length < 2) {
-    alert("No hay parámetros en la URL");
-    return;
+  // 🔑 Intentamos extraer buyURL desde la escena
+  if (sceneParam) {
+    try {
+      const decodedScene = atob(decodeURIComponent(sceneParam));
+      const sceneURL = new URL(decodedScene);
+      const buyParam = sceneURL.searchParams.get("buyURL");
+      if (buyParam) sceneBuyURL = decodeURIComponent(buyParam);
+    } catch (e) {
+      console.warn("Error leyendo buyURL:", e);
+    }
   }
 
-  const base = parts[0];
-  let params = parts[1];
-
-  let newBase = base.replace(/https:\/\/[^/]+/, "https://product.3dtwins.tech");
-
-  params = params.replace(/^t=/, "scene=");
-
+  // 🔵 Preparar base64 actualizado de la escena
+  let newSceneParam = sceneParam;
   try {
-    const decoded = atob(decodeURIComponent(params.split("=")[1]));
+    const decoded = atob(decodeURIComponent(sceneParam));
     const urlObj = new URL(decoded);
 
-   
-    const buyParam = urlObj.searchParams.get("buyURL");
-    
     const configItems = [];
     currentModel.traverse((child) => {
       if (child.isMesh) {
@@ -241,33 +242,20 @@ document.getElementById("buyButton").onclick = function () {
       urlObj.searchParams.set("config", configItems.join("|"));
     }
 
-
-    params = "scene=" + encodeURIComponent(btoa(urlObj.toString()));
-
-
-    if (buyParam && buyParam.startsWith("https://")) {
-      const finalURL = newBase + "/products/personalizado?" + params;
-      window.open(finalURL, "_blank");
-      return;
-    }
-
-
-    const sceneURL = base.replace(
-      /https:\/\/[^/]+/,
-      "https://scene.3dtwins.tech"
-    ) + "?" + params;
-
-   
-    history.replaceState({}, '', sceneURL);
-
-   
-    VH.init({
-      containerId: 'vh-container',
-      scene: params.split("=")[1] 
-    });
-
+    newSceneParam = "scene=" + encodeURIComponent(btoa(urlObj.toString()));
   } catch (err) {
     console.warn("Error actualizando config:", err);
+  }
+
+  if (sceneBuyURL) {
+    // 🟢 Si existe buyURL, construir finalBuyURL y abrir en nueva pestaña
+    const finalBuyURL = sceneBuyURL + "products/personalizado?" + newSceneParam;
+    window.open(finalBuyURL, "_blank");
+  } else {
+    // 🔵 Si no hay buyURL, reemplazar domain para recargar en la misma página
+    const newBase = fullURL.replace(/https:\/\/[^/]+/, "https://product.3dtwins.tech");
+    const finalURL = newBase.split("?")[0] + "?" + newSceneParam;
+    window.location.href = finalURL;
   }
 };
 </script>
