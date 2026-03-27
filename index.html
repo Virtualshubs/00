@@ -203,29 +203,17 @@ document.getElementById("buyButton").onclick = function () {
     return;
   }
 
-  const fullURL = window.location.href;
-  const parts = fullURL.split("?");
-
-  if (parts.length < 2) {
-    alert("No hay parámetros en la URL");
+  const urlParams = new URLSearchParams(window.location.search);
+  const sceneParamOriginal = urlParams.get("scene");
+  if (!sceneParamOriginal) {
+    alert("No hay parámetros de escena en la URL");
     return;
   }
 
-  const base = parts[0];
-  let params = parts[1];
-
-  // ✅ cambiar dominio
-  const newBase = base.replace(
-    /https:\/\/[^/]+/,
-    "https://product.3dtwins.tech"
-  );
-
-  // 🔥 cambiar t= → scene=
-  params = params.replace(/^t=/, "scene=");
-
-  // 🔑 actualizar config en tiempo real
+ 
+  let updatedSceneParam = sceneParamOriginal;
   try {
-    const decoded = atob(decodeURIComponent(params.split("=")[1]));
+    const decoded = atob(decodeURIComponent(sceneParamOriginal));
     const urlObj = new URL(decoded);
 
     const configItems = [];
@@ -244,15 +232,44 @@ document.getElementById("buyButton").onclick = function () {
       urlObj.searchParams.set("config", configItems.join("|"));
     }
 
-    // codificar nuevamente base64
-    params = "scene=" + encodeURIComponent(btoa(urlObj.toString()));
+    updatedSceneParam = encodeURIComponent(btoa(urlObj.toString()));
   } catch (err) {
     console.warn("Error actualizando config:", err);
   }
 
-  const finalURL = newBase + "?" + params;
 
-  window.open(finalURL, "_blank");
+  let sceneBuyURL = '';
+  try {
+    const decoded = atob(decodeURIComponent(updatedSceneParam));
+    const sceneURL = new URL(decoded);
+    const buyParam = sceneURL.searchParams.get("buyURL");
+    if (buyParam) {
+      sceneBuyURL = decodeURIComponent(buyParam);
+    }
+  } catch (e) {
+    console.warn("Error leyendo buyURL:", e);
+  }
+
+  if (sceneBuyURL && sceneBuyURL.startsWith("https://")) {
+
+    const baseURL = sceneBuyURL.endsWith('/') ? sceneBuyURL.slice(0, -1) : sceneBuyURL;
+    const finalBuyURL = `${baseURL}/products/personalizado?scene=${updatedSceneParam}`;
+    window.open(finalBuyURL, "_blank");
+  } else {
+  
+    const fullURL = window.location.href;
+    const newURL = fullURL.replace(
+      "https://scene.3dtwins.tech",
+      "https://product.3dtwins.tech"
+    ).replace(/scene=[^&]+/, `scene=${updatedSceneParam}`);
+
+    history.replaceState({}, '', newURL);
+
+    VH.init({
+      containerId: 'vh-container',
+      scene: updatedSceneParam
+    });
+  }
 };
 </script>
        
