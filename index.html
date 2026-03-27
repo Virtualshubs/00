@@ -204,26 +204,28 @@ document.getElementById("buyButton").onclick = function () {
   }
 
   const fullURL = window.location.href;
-  const urlParams = new URLSearchParams(window.location.search);
-  const sceneParam = urlParams.get("scene");
-  let sceneBuyURL = '';
+  const parts = fullURL.split("?");
 
-  // 🔑 Intentamos extraer buyURL desde la escena
-  if (sceneParam) {
-    try {
-      const decodedScene = atob(decodeURIComponent(sceneParam));
-      const sceneURL = new URL(decodedScene);
-      const buyParam = sceneURL.searchParams.get("buyURL");
-      if (buyParam) sceneBuyURL = decodeURIComponent(buyParam);
-    } catch (e) {
-      console.warn("Error leyendo buyURL:", e);
-    }
+  if (parts.length < 2) {
+    alert("No hay parámetros en la URL");
+    return;
   }
 
-  // 🔵 Preparar base64 actualizado de la escena
-  let newSceneParam = sceneParam;
+  const base = parts[0];
+  let params = parts[1];
+
+  // ✅ cambiar dominio
+  const newBase = base.replace(
+    /https:\/\/[^/]+/,
+    "https://product.3dtwins.tech"
+  );
+
+  // 🔥 cambiar t= → scene=
+  params = params.replace(/^t=/, "scene=");
+
+  // 🔑 actualizar config en tiempo real
   try {
-    const decoded = atob(decodeURIComponent(sceneParam));
+    const decoded = atob(decodeURIComponent(params.split("=")[1]));
     const urlObj = new URL(decoded);
 
     const configItems = [];
@@ -242,21 +244,15 @@ document.getElementById("buyButton").onclick = function () {
       urlObj.searchParams.set("config", configItems.join("|"));
     }
 
-    newSceneParam = "scene=" + encodeURIComponent(btoa(urlObj.toString()));
+    // codificar nuevamente base64
+    params = "scene=" + encodeURIComponent(btoa(urlObj.toString()));
   } catch (err) {
     console.warn("Error actualizando config:", err);
   }
 
-  if (sceneBuyURL) {
-    // 🟢 Si existe buyURL, construir finalBuyURL y abrir en nueva pestaña
-    const finalBuyURL = sceneBuyURL + "products/personalizado?" + newSceneParam;
-    window.open(finalBuyURL, "_blank");
-  } else {
-    // 🔵 Si no hay buyURL, reemplazar domain para recargar en la misma página
-    const newBase = fullURL.replace(/https:\/\/[^/]+/, "https://product.3dtwins.tech");
-    const finalURL = newBase.split("?")[0] + "?" + newSceneParam;
-    window.location.href = finalURL;
-  }
+  const finalURL = newBase + "?" + params;
+
+  window.open(finalURL, "_blank");
 };
 </script>
        
