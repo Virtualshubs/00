@@ -196,53 +196,29 @@
 <script src="https://unpkg.com/three@0.134.0/examples/js/exporters/GLTFExporter.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
 
-<script>
-document.getElementById("buyButton").onclick = function () {
-  if (!currentModel) {
-    alert("No hay modelo cargado.");
-    return;
-  }
+<script>document.addEventListener("DOMContentLoaded", () => {
+  const buyButton = document.getElementById("buyButton");
+  const editButton = document.getElementById("editButton");
+  buyButton.style.display = "inline-block";
+  editButton.style.display = "inline-block";
 
+  // ✅ Tomamos scene o t= para compatibilidad
   const urlParams = new URLSearchParams(window.location.search);
-  const sceneParamOriginal = urlParams.get("scene");
-  if (!sceneParamOriginal) {
-    alert("No hay parámetros de escena en la URL");
+  let sceneParam = urlParams.get("scene") || urlParams.get("t");
+
+  if (!sceneParam) {
+    console.warn("No hay parámetros de escena en la URL");
+    buyButton.style.display = "none"; // Ocultar botón si no hay escena
     return;
   }
 
- 
-  let updatedSceneParam = sceneParamOriginal;
+  // Decodificamos la escena para extraer buyURL
+  let sceneBuyURL = "";
   try {
-    const decoded = atob(decodeURIComponent(sceneParamOriginal));
-    const urlObj = new URL(decoded);
-
-    const configItems = [];
-    currentModel.traverse((child) => {
-      if (child.isMesh) {
-        const objName = child.name || "unnamed";
-        let colorHex = child.userData?.config?.color;
-        if (!colorHex && child.material?.color) {
-          colorHex = "#" + child.material.color.getHexString();
-        }
-        if (colorHex) configItems.push(`${objName}:${colorHex}`);
-      }
-    });
-
-    if (configItems.length) {
-      urlObj.searchParams.set("config", configItems.join("|"));
-    }
-
-    updatedSceneParam = encodeURIComponent(btoa(urlObj.toString()));
-  } catch (err) {
-    console.warn("Error actualizando config:", err);
-  }
-
-
-  let sceneBuyURL = '';
-  try {
-    const decoded = atob(decodeURIComponent(updatedSceneParam));
-    const sceneURL = new URL(decoded);
+    const decodedScene = atob(decodeURIComponent(sceneParam));
+    const sceneURL = new URL(decodedScene);
     const buyParam = sceneURL.searchParams.get("buyURL");
+
     if (buyParam) {
       sceneBuyURL = decodeURIComponent(buyParam);
     }
@@ -250,27 +226,45 @@ document.getElementById("buyButton").onclick = function () {
     console.warn("Error leyendo buyURL:", e);
   }
 
-  if (sceneBuyURL && sceneBuyURL.startsWith("https://")) {
-
-    const baseURL = sceneBuyURL.endsWith('/') ? sceneBuyURL.slice(0, -1) : sceneBuyURL;
-    const finalBuyURL = `${baseURL}/products/personalizado?scene=${updatedSceneParam}`;
-    window.open(finalBuyURL, "_blank");
-  } else {
-  
-    const fullURL = window.location.href;
-    const newURL = fullURL.replace(
-      "https://scene.3dtwins.tech",
-      "https://product.3dtwins.tech"
-    ).replace(/scene=[^&]+/, `scene=${updatedSceneParam}`);
-
-    history.replaceState({}, '', newURL);
-
-    VH.init({
-      containerId: 'vh-container',
-      scene: updatedSceneParam
-    });
+  // Mostrar u ocultar botón de comprar según existencia de buyURL
+  if (!sceneBuyURL || !sceneBuyURL.startsWith("https://")) {
+    buyButton.style.display = "none";
   }
-};
+
+  // Comprar
+  buyButton.onclick = () => {
+    if (sceneBuyURL && sceneBuyURL.startsWith("https://")) {
+      // Construir FinalBuyURL para Shopify /products/personalizado
+      const baseURL = sceneBuyURL.endsWith("/") ? sceneBuyURL.slice(0, -1) : sceneBuyURL;
+      const finalBuyURL = `${baseURL}/products/personalizado?scene=${encodeURIComponent(sceneParam)}`;
+      window.open(finalBuyURL, "_blank"); // Abrir nueva ventana solo si hay buyURL
+    } else {
+      // No hay buyURL → recarga interna cambiando scene.3dtwins → product.3dtwins
+      const newURL = window.location.href.replace(
+        /https:\/\/scene\.3dtwins\.tech/,
+        "https://product.3dtwins.tech"
+      );
+      history.replaceState({}, "", newURL); // Actualiza URL sin recargar página
+      // Reiniciamos la escena con VH.init usando el mismo sceneParam
+      VH.init({ containerId: "vh-container", scene: sceneParam });
+    }
+  };
+
+  // Volver a personalizar
+  editButton.onclick = () => {
+    if (!sceneParam) {
+      alert("No hay escena disponible para personalizar");
+      return;
+    }
+
+    const newURL = window.location.href.replace(
+      "https://product.3dtwins.tech/",
+      "https://scene.3dtwins.tech/"
+    );
+
+    window.open(newURL, "_blank");
+  };
+});
 </script>
        
 <script>
