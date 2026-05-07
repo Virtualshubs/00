@@ -198,10 +198,14 @@ top: 20px;
 
 <script>
 
-
 const buyButton = document.getElementById("buyButton");
 
-// Ocultar por defecto
+// ======================================
+// DETECCIÓN BUY URL
+// ======================================
+
+let showBuyButton = false;
+
 buyButton.style.display = "none";
 
 try {
@@ -214,12 +218,22 @@ try {
     const params = parts[1];
     const encoded = params.split("=")[1];
 
-    // Decodificar payload
     const decoded = atob(decodeURIComponent(encoded));
 
-    // Mostrar botón solo si existe buyURL
-    if (decoded.includes("buyURL=")) {
-      buyButton.style.display = "block";
+    const urlObj = new URL(decoded);
+
+    // 1. Check directo en query params
+    const buyURLParam = urlObj.searchParams.get("buyURL");
+
+    if (buyURLParam) {
+      showBuyButton = true;
+    }
+
+    // 2. Check dentro de config (tu caso real más probable)
+    const config = urlObj.searchParams.get("config");
+
+    if (config && config.includes("buyURL")) {
+      showBuyButton = true;
     }
 
   }
@@ -230,6 +244,12 @@ try {
 
 }
 
+buyButton.style.display = showBuyButton ? "block" : "none";
+
+
+// ======================================
+// ONCLICK ORIGINAL (SIN CAMBIOS)
+// ======================================
 
 buyButton.onclick = function () {
 
