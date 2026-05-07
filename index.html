@@ -197,8 +197,42 @@ top: 20px;
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
 
 <script>
-       
-document.getElementById("buyButton").onclick = function () {
+
+
+const buyButton = document.getElementById("buyButton");
+
+// Ocultar por defecto
+buyButton.style.display = "none";
+
+try {
+
+  const fullURL = window.location.href;
+  const parts = fullURL.split("?");
+
+  if (parts.length >= 2) {
+
+    const params = parts[1];
+    const encoded = params.split("=")[1];
+
+    // Decodificar payload
+    const decoded = atob(decodeURIComponent(encoded));
+
+    // Mostrar botón solo si existe buyURL
+    if (decoded.includes("buyURL=")) {
+      buyButton.style.display = "block";
+    }
+
+  }
+
+} catch (err) {
+
+  console.warn("No se pudo verificar buyURL:", err);
+
+}
+
+
+buyButton.onclick = function () {
+
   if (!currentModel) {
     alert("No hay modelo cargado.");
     return;
@@ -215,43 +249,73 @@ document.getElementById("buyButton").onclick = function () {
   const base = parts[0];
   let params = parts[1];
 
-
   const newBase = base.replace(
     /https:\/\/[^/]+/,
     "https://product.3dtwins.tech"
   );
 
   params = params.replace(/^t=/, "scene=");
- 
+
   try {
-    const decoded = atob(decodeURIComponent(params.split("=")[1]));
+
+    const decoded =
+      atob(decodeURIComponent(params.split("=")[1]));
+
     const urlObj = new URL(decoded);
 
     const configItems = [];
+
     currentModel.traverse((child) => {
+
       if (child.isMesh) {
+
         const objName = child.name || "unnamed";
+
         let colorHex = child.userData?.config?.color;
+
         if (!colorHex && child.material?.color) {
-          colorHex = "#" + child.material.color.getHexString();
+          colorHex =
+            "#" + child.material.color.getHexString();
         }
-        if (colorHex) configItems.push(`${objName}:${colorHex}`);
+
+        if (colorHex) {
+          configItems.push(`${objName}:${colorHex}`);
+        }
+
       }
+
     });
 
     if (configItems.length) {
-      urlObj.searchParams.set("config", configItems.join("|"));
+
+      urlObj.searchParams.set(
+        "config",
+        configItems.join("|")
+      );
+
     }
-   
-    params = "scene=" + encodeURIComponent(btoa(urlObj.toString()));
+
+    params =
+      "scene=" +
+      encodeURIComponent(
+        btoa(urlObj.toString())
+      );
+
   } catch (err) {
-    console.warn("Error actualizando config:", err);
+
+    console.warn(
+      "Error actualizando config:",
+      err
+    );
+
   }
 
   const finalURL = newBase + "?" + params;
 
-window.location.href = finalURL;
+  window.location.href = finalURL;
+
 };
+
 </script>
        
 <script>
