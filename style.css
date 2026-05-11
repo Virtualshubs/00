@@ -186,34 +186,129 @@ img.qr {
   margin-left: 16px;
 }
 
-/* Botones HUD */
 #hudButtons {
+
   position: absolute;
-  top: 12px;
-  right: 12px;
+
+  top: 16px;
+  right: 16px;
+
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  z-index: 100;
+
+  gap: 10px;
+
+  z-index: 10000;
+
+  padding: 14px;
+
+  width: 240px;
+
+  max-height: 70vh;
+
+  overflow-y: auto;
+
+  border-radius: 24px;
+
+  background: rgba(255,255,255,0.14);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  border: 1px solid rgba(255,255,255,0.18);
+
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.18);
+
 }
+
+/* ===================================================== */
+/* BOTONES COMPONENTES */
+/* ===================================================== */
 
 .hud-btn {
-  padding: 10px 10px;
+
+  padding: 14px 16px;
+
   border-radius: 18px;
+
   border: none;
-  background: #ababab;
-  color: #fff;
+
+  background:
+    rgba(255,255,255,0.78);
+
+  color: #111;
+
   cursor: pointer;
+
   font-size: 13px;
+
+  font-weight: 600;
+
+  text-align: left;
+
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+
+  box-shadow:
+    0 6px 18px rgba(0,0,0,0.08);
+
 }
+
+/* HOVER */
+
+.hud-btn:hover {
+
+  transform:
+    translateY(-2px);
+
+  background:
+    rgba(255,255,255,0.96);
+
+  box-shadow:
+    0 12px 24px rgba(0,0,0,0.12);
+
+}
+
+/* CLICK */
+
+.hud-btn:active {
+
+  transform:
+    scale(0.98);
+
+}
+
+/* ===================================================== */
+/* BOTÓN TOGGLE */
+/* ===================================================== */
 
 .toggle-btn {
+
   margin-left: 4px;
+
   cursor: pointer;
+
   font-size: 12px;
-  color: #666;
+
+  color: rgba(255,255,255,0.8);
+
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+
 }
 
+.toggle-btn:hover {
+
+  opacity: 1;
+
+  transform:
+    scale(1.08);
+
+}
 /* Panel animaciones */
 #animationPanel {
   margin-top: 12px;
