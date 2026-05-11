@@ -176,6 +176,7 @@ img.qr {
 }
 
 
+
 #hudButtons{
 position:absolute;
 top:66px;
@@ -247,7 +248,6 @@ opacity:1;
 transform:scale(1.08);
 }
 
-
 #floatMenu{
 position:absolute;
 bottom:10px;
@@ -255,7 +255,6 @@ left:50%;
 transform:translateX(-50%);
 width: 70%;
 min-width:220px;
-max-width:1200px;
 max-height: 20vh;
 height: auto;
 overflow-y: auto;
@@ -361,7 +360,7 @@ transform:translateY(0px) scale(1);
 }
 
 #floatCloseBtn{
-position:relative;
+position:absolute;
 top:10px;
 right:10px;
 width:auto;
