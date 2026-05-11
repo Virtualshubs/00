@@ -426,6 +426,7 @@ transform:scale(0.95);
     transform 0.2s ease,
     background 0.2s ease;
   z-index: 10001;
+  scale:0.9;
 }
 
 #toggleHudButton:hover {
@@ -437,6 +438,8 @@ transform:scale(0.95);
     rgba(255,255,255,0.95);
 
 }
+
+
 
 /* Catálogo */
 .catalogContainer {
