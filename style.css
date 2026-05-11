@@ -247,6 +247,7 @@ opacity:1;
 transform:scale(1.08);
 }
 
+
 #floatMenu{
 position:absolute;
 bottom:10px;
@@ -255,7 +256,9 @@ transform:translateX(-50%);
 width: 70%;
 min-width:220px;
 max-width:1200px;
-height: 20%;
+max-height: 20vh;
+height: auto;
+overflow-y: auto;
 padding:12px 14px;
 display:none;
 z-index:99999999;
@@ -270,6 +273,7 @@ flex-direction:row;
 align-items:center;
 gap:12px;
 flex-wrap:wrap;
+align-content: flex-start;
 }
 
 
