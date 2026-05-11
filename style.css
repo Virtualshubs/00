@@ -489,3 +489,96 @@ transform:scale(0.95);
   backdrop-filter: blur(4px);
   transition: 0.3s;
 }
+
+@media (max-width: 768px){
+
+#hudButtons{
+width:180px;
+top:60px;
+right:10px;
+padding:10px;
+gap:8px;
+}
+
+.hud-btn{
+font-size:12px;
+padding:12px 12px;
+border-radius:14px;
+line-height:1.2;
+}
+
+#floatMenu{
+width:200px;
+right:10px;
+bottom:10px;
+padding:12px;
+}
+
+#floatMenu h4{
+font-size:14px;
+margin-bottom:10px;
+}
+
+#floatMenu label{
+font-size:11px;
+}
+
+#floatMenu button{
+font-size:12px;
+padding:10px;
+}
+
+#floatCloseBtn{
+width:26px;
+height:26px;
+font-size:12px;
+}
+
+}
+
+@media (max-width: 420px){
+
+#hudButtons{
+width:160px;
+top:56px;
+right:8px;
+padding:8px;
+}
+
+.hud-btn{
+font-size:11px;
+padding:10px;
+border-radius:12px;
+}
+
+#floatMenu{
+width:170px;
+padding:10px;
+}
+
+#floatMenu h4{
+font-size:13px;
+}
+
+#floatMenu label{
+font-size:10px;
+gap:4px;
+}
+
+#floatMenu input[type="file"],
+#floatMenu input[type="color"]{
+font-size:11px;
+}
+
+#floatMenu button{
+font-size:11px;
+padding:9px;
+}
+
+#floatCloseBtn{
+width:24px;
+height:24px;
+font-size:11px;
+}
+
+}
