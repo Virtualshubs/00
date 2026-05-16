@@ -1,7 +1,7 @@
 window.addEventListener("DOMContentLoaded", () => {
 
   const script = document.createElement("script");
-  script.src = "viewer-obfuscated.js";
+  script.src = "https://cdn.3dtwins.tech/visor/visor.js";
 
   document.body.appendChild(script);
 
